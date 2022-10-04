@@ -1,20 +1,28 @@
 import PropTypes from 'prop-types';
 import { Box } from 'components/Box';
 import { DeleteContact } from './Contacts.styled';
+import { useDispatch, useSelector } from 'react-redux';
+import { getContacts, getFilter } from 'redux/selectors';
+import { setFilter } from 'redux/filterSlice';
+import { deleteContact } from 'redux/contactsSlice';
 
 
-export const Contacts = ({ title, contactsList, filterChanger, filter, deleter }) => {
+export const Contacts = ({ title }) => {
+    const dispatch = useDispatch();
+    const contacts = useSelector(getContacts);
+    const filter = useSelector(getFilter);
+
+
+    const visibleContacts = contacts.filter(contact => contact.name.toLowerCase().includes(filter.toLowerCase()))
 
     const renderContacts = () => {
         
-        return contactsList.filter(contact =>
-            contact.name.toLowerCase().includes(filter.toLowerCase()))
-            .map(contact => {
+        return  visibleContacts.map(contact => {
                 const { id, name, number } = contact
                 return (
                     <Box as="li" display="flex" mb={3} p={2} width="250px" borderRadius="16px"
                         justifyContent="space-between" border="1px dashed black"
-                        key={id}><div>{name}: {number}</div><DeleteContact onClick={() => deleter(id)}>X</DeleteContact></Box>
+                        key={id}><div>{name}: {number}</div><DeleteContact onClick={() => dispatch(deleteContact(id))}>X</DeleteContact></Box>
                 )
             })
     }
@@ -29,7 +37,7 @@ export const Contacts = ({ title, contactsList, filterChanger, filter, deleter }
                 gridGap={3} p={3} mt={3}
                 border="1px solid black">
                 <label htmlFor='filter'>Find contacts by name</label>
-                <input type="text" name="filter" onChange={(e) => filterChanger(e.target.value)}></input>
+                <input type="text" name="filter" onChange={(e) => dispatch(setFilter(e.target.value))}></input>
             </Box>
             
             <Box as="ul" mt={4}>
@@ -41,13 +49,4 @@ export const Contacts = ({ title, contactsList, filterChanger, filter, deleter }
 
 Contacts.propType = {
     title: PropTypes.string.isRequired,
-    contactsList: PropTypes.arrayOf(
-        PropTypes.exact({
-            id: PropTypes.string.isRequired,
-            name: PropTypes.string.isRequired,
-            number: PropTypes.string.isRequired
-        })),
-    filterChanger: PropTypes.func.isRequired,
-    filter: PropTypes.string.isRequired,
-    deleter: PropTypes.func.isRequired
 }
